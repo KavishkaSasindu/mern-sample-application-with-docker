@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo
+    container_name: mongo_db_server
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - mern_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend_server
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/new_crud_app
+    networks:
+      - mern_network
+    depends_on:
+      - mongo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_server
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - mern_network
+    depends_on:
+      - backend
+
+networks:
+  mern_network:
+    driver: bridge
+
+volumes:
+  mongodata:
+    driver: local
